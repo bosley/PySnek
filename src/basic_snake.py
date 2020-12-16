@@ -46,8 +46,6 @@ class BasicSnake:
 
             new_position = self.calculate_new_pos(idx, start, end)
 
-            print(new_position)
-
             self.target.points[idx] = copy.deepcopy(new_position)
 
             idx = idx + 1
@@ -101,12 +99,8 @@ class BasicSnake:
 
         flag = True
 
-        print("Rows: ", rows, " . Cols: ", cols)
-
         for y in range(0, rows):
             for x in range(0, cols):
-
-                print("MOOT")
 
                 # E = ∫(α(s)Econt + β(s)Ecurv + γ(s)Eimage)ds
 
@@ -162,9 +156,6 @@ class BasicSnake:
                 eimg = (eimg-ngmin) / divisor
 
                 energy = econt + ecurv + eimg 
-
-                print("Energy   :", energy)
-                print("localMin :", localMin)
 
                 if flag:
                     flag = False
