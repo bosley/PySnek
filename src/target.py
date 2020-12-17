@@ -20,6 +20,10 @@ class Target:
         self.image = img
         self.sobel_image = get_sobel(img)
 
+    def reset(self):
+        self.points = []
+        self.ready = False
+
     def mark_ready(self):
         if self.ready:
             return
@@ -51,16 +55,16 @@ class Target:
 
             # Draw points
             for p in self.points:
-                self.image = cv2.circle(self.image, (p[0], p[1]), 1, (0,0,255), 10)
+                self.image = cv2.circle(self.image, (p[0], p[1]), 1, (0,0,255), 4)
 
         if show_lines and len(self.points) > 1:
 
             # Draw lines
             for x in range(0, len(self.points)-1):
-                self.image = cv2.line(self.image, (self.points[x][0], self.points[x][1]), (self.points[x+1][0], self.points[x+1][1]), (0,255,0), 5) 
+                self.image = cv2.line(self.image, (self.points[x][0], self.points[x][1]), (self.points[x+1][0], self.points[x+1][1]), (0,255,0), 1) 
 
             # Show last line
-            self.image = cv2.line(self.image, (self.points[0][0], self.points[0][1]), (self.points[len(self.points)-1][0],self.points[len(self.points)-1][1]), (0,255,0), 5) 
+            self.image = cv2.line(self.image, (self.points[0][0], self.points[0][1]), (self.points[len(self.points)-1][0],self.points[len(self.points)-1][1]), (0,255,0), 1) 
 
         cv2.imshow('Target', self.image)
 

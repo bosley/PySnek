@@ -6,15 +6,24 @@ from os import path
 
 import target
 import basic_snake
+import balloon_snake
 
 image_target = target.Target()
 
-algo_basic_snake = basic_snake.BasicSnake(image_target)
+
+algorithms = {
+    'basic_snake': basic_snake.BasicSnake(image_target),
+    'balloon_snake': balloon_snake.BalloonSnake(image_target)
+}
+
+
+algorithm_selection = 'basic_snake'
 
 def info():
     print("Click to start adding the base points to the image")
     print("Once the initial point(s) have been added, press 'space'")
     print("to kick start the algorithm")
+    print("To reset the algorithm press 'r'")
 
 def execute(image):
 
@@ -22,13 +31,15 @@ def execute(image):
 
     image_target.show()
 
-    # The basic snake algo - Modify alpha, beta, and gamma to change properties of the snake
-    algo_basic_snake.step()
+    algorithms[algorithm_selection].step()
 
     key = cv2.waitKey(1)
 
     if key == 27: 
         return False
+
+    if key == 114 and image_target.ready:
+        image_target.reset()
 
     elif key == 32:
         image_target.mark_ready()
@@ -56,6 +67,8 @@ def image_file(file):
     cv2.destroyAllWindows()
 
 def main():
+    global algorithm_selection
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-c", "--camera", help="Use camera",
@@ -66,11 +79,25 @@ def main():
 
     parser.add_argument("-s", "--source", help="Source")
 
+    parser.add_argument("-a", "--algorithm", help="Select an algorithm (basic_snake, balloon_snake)")
+
     args = parser.parse_args()
+
+
+    if args.algorithm == "basic_snake":
+        print("Basic snake selected")
+    elif args.algorithm == "balloon_snake":
+        algorithm_selection = "balloon_snake"
+        print("Balloon snake selected")
+    else:
+        print("Unknown algorithm selection given - Using 'basic_snake'")
+        algorithm_selection = "basic_snake"
 
     if args.camera and args.file:
         print("Please select either 'camera' OR 'file' but not both")
         exit(1)
+
+    algorithms[algorithm_selection].setup()
 
     if args.camera:
         camera_number = -1

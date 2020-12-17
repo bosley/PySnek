@@ -1,5 +1,3 @@
-# A basic snake using : E = ∫(αEcont + βEcurv + γEimage)ds
-
 from target import Target
 
 import cv2
@@ -9,10 +7,11 @@ import math
 def nothing(x):
     pass
 
-class BasicSnake:
+class BalloonSnake:
 
     def __init__(self, target_data):
         self.target  = target_data
+        self.first_dispersion = 5
         self.avgDist = 0
         self.alpha = 0.2
         self.beta  = 1
@@ -26,8 +25,12 @@ class BasicSnake:
 
     def step(self):
 
+        # Mark the thing ready if a single selection has been made as this is more a balloon snake
+        if not self.target.ready and len(self.target.get_points()) > 0:
+            self.target.mark_ready()
+    
         if not self.target.ready:
-            return
+            return 
 
         a = cv2.getTrackbarPos('Alpha','Target')
         b = cv2.getTrackbarPos('Beta', 'Target')
@@ -39,6 +42,10 @@ class BasicSnake:
             self.beta  = b
         if g != 0:
             self.gamma = g
+
+        if len(self.target.get_points()) == 1:
+            self.first_group()
+            return
 
         height, width = self.target.sobel_image.shape
 
@@ -71,6 +78,37 @@ class BasicSnake:
 
             idx = idx + 1
 
+    # Get the first point and create the initial group to scan from
+    def first_group(self):
+
+        points = self.target.get_points()
+
+        height, width = self.target.sobel_image.shape
+
+        left_x  = points[0][0]
+        right_x = points[0][0]
+        upper_y = points[0][1]
+        lower_y = points[0][1]
+ 
+        if left_x >= self.first_dispersion:
+            left_x = left_x - self.first_dispersion
+        if right_x < (width - self.first_dispersion):
+            right_x = right_x + self.first_dispersion
+        if upper_y >= self.first_dispersion:
+            upper_y = upper_y - self.first_dispersion
+        if lower_y < (height  - self.first_dispersion):
+            lower_y = lower_y + self.first_dispersion
+
+        self.target.points = []
+        self.target.points.append([left_x,  points[0][1]])
+        self.target.points.append([left_x,  upper_y])
+        self.target.points.append([points[0][0],  upper_y])
+        self.target.points.append([right_x, upper_y])
+        self.target.points.append([right_x, points[0][1]])
+        self.target.points.append([right_x, lower_y])
+        self.target.points.append([points[0][0],  lower_y])
+        self.target.points.append([left_x,  lower_y])
+
     def updateAveragePointDistance(self):
 
         points = self.target.get_points()
@@ -86,6 +124,7 @@ class BasicSnake:
 
         self.avgDist = sum / len(points)
 
+
     def calculate_new_pos(self, idx, start, end):
 
         cols = end[0] - start[0]
@@ -95,7 +134,7 @@ class BasicSnake:
         location = points[idx]
 
         flag = True 
-        localMin = 1000.00
+        localMax = 0.00
 
         self.updateAveragePointDistance()
 
@@ -180,10 +219,10 @@ class BasicSnake:
 
                 if flag:
                     flag = False
-                    localMin = energy
+                    localMax = energy
                     location = (parentX, parentY)
-                elif energy < localMin:
-                    localMin = energy
+                elif energy > localMax:
+                    localMax = energy
                     location = (parentX, parentY)
 
         return location
